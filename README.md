@@ -1,4 +1,4 @@
-< Created by `luyidong <yidongsky@gmail.com>`_
+> Created by `luyidong <yidongsky@gmail.com>`_
 ========
 Alpha 社交网站
 ========
@@ -7,7 +7,6 @@ Alpha 社交网站
 2. APP支持	- 博客，Wiki，问答，学习平台
 
 3. follows	- 关注的人正在做什么
-
 ========
 功能
 ========
@@ -15,4 +14,3 @@ Alpha 社交网站
 
 2. 用户喜欢，收藏等
 =======
-
