@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+
+{% block title %}Login{% endblock %}
+
+{% block content %}
+    <h1>Login</h1>
+
+    <form action="." method="post">
+        {{ user_form.as_p }}
+        {% csrf_token %}
+        <p><input type="submit" value="Create my account"></p>
+    </form>
+
+
+
+ <div id="login-overlay" class="modal-dialog modal-md">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h4 class="modal-title" id="myModalLabel">Login</a>
+        </div>
+        <div class="modal-body">
+            <div class="row">
+                <div class="col-xs-6">
+                    <div class="well">
+                        <form role="form">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label for="username" class="control-label">username</label>
+                                        <input type="text" class="form-control" name="email" value="" required title="Электронная почта" placeholder="электронная почта">
+                                        <span class="help-block"></span>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="password" class="control-label">Пароль <a href="/sessions/forgot_password">password</a></label>
+                                        <input type="password" class="form-control" name="password" placeholder="пароль" value="" required="" title="Введите пароль">
+                                        <span class="help-block"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <h5>Неправильно введены данные</h5>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <button type="submit" value="login" name="submit" class="btn btn-success btn-block">Вход</button>
+                                </div>
+                                <div class="col-md-6">
+                                    <a href="">Регистрация</a>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                  <div class="col-xs-6">
+                      <h5>Войдите с помощью социальных сетей</h5>
+                        <ul class="list-unstyled list-social">
+                            <li>
+                                <a href="#" class="btn btn-lg btn-primary btn-block">
+                                    <i class="fa fa-google-plus"></i>
+                                    <span class="">Google</span>
+		                        </a>
+                            </li>
+                            <li>
+                                <a href="#" class="btn btn-lg btn-default btn-block">
+                                    <i class="fa fa-facebook"></i>
+                                    <span class="">Facebook</span>
+		                        </a>
+                            </li>
+                            <li>
+                                <a href="#" class="btn btn-lg btn-default btn-block">
+                                    <i class="fa fa-vk"></i>
+                                    <span class="">ВКонтакте</span>
+		                        </a>
+                            </li>
+                            <li>
+                                <a href="#" class="btn btn-lg btn-default btn-block">
+                                    <i class="fa fa-odnoklassniki"></i>
+                                    <span class="">Одноклассники</span>
+		                        </a>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+{% load static %}
+{% block head_extra %}
+
+{{ form.media }}
+    <script src="{% static 'public/js/jquery.min.js' %}"></script>
+<script src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
+  <script src="{% static 'public/js/write.js' %}"></script>
+
+{% endblock head_extra %}
+
+
+
+{% block title %}Form{% endblock %}
+
+{% block content %}
+
+
+    <div class="col-sm-6 ">
+            <form method="POST" action="" enctype="multipart/form-data"> {% csrf_token %}
+                {{ form|crispy }}
+                {{ tag_form|crispy }}
+
+                <!--
+                <input type='submit' value='Create Post' class='btn btn-default'>
+                -->
+
+                {% if request.path == "/post/create/" %}
+
+                <div class="form-group">
+                  <button type="button" id="publish" class="btn btn-primary publish">发表</button>
+                  <button type="button"  id="draft" class="btn btn-default draft">存稿</button>
+                  <a href="{% url 'posts:post-index' %}" class="btn btn-default">取消</a>
+                 </div>
+                {% else %}
+
+                <div class="form-group">
+                  <button type="button" id="publish" class="btn btn-primary publish">更新</button>
+                  <a href="{% url 'posts:post-index' %}" class="btn btn-default">取消</a>
+                 </div>
+               {% endif %}
+
+            </form>
+        <hr/>
+
+    </div>
+
+
+
+    <div class="col-sm-6">
+
+        <h1>Preview</h1>
+
+        <hr/>
+
+        <div class='content-preview'>
+            <h3 id='preview-title'></h3>
+            <p id='preview-content'></p>
+
+        </div>
+
+    </div>
+{% endblock %}

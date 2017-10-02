@@ -1,0 +1,180 @@
+{% load staticfiles %}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>{% block title %}{% endblock %}</title>
+
+<!-- 最新版本的 Bootstrap 核心 CSS 文件 -->
+<link rel="stylesheet" href="{% static "bootstrap/css/bootstrap.min.css" %}">
+
+
+    <!-- font-awesome -->
+    <link href="{% static "public/css/font-awesome.min.css" %}" rel="stylesheet">
+    <link rel="icon"  href="{% static 'favicon.ico' %}">
+    <link rel="stylesheet" href="{% static "public/css/base.css" %}" />
+    <!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>-->
+
+<!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+{% block head_extra %}{% endblock head_extra %}
+
+{% block head %}{% endblock head%}
+</head>
+<body>
+
+
+<nav class="navbar navbar-default ">
+  <div class="container-fluid">
+    <!-- Brand and toggle get grouped for better mobile display -->
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="#">Brand</a>
+    </div>
+
+    <!-- Collect the nav links, forms, and other content for toggling -->
+    <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+      <ul class="nav navbar-nav">
+        <li class="active"><a href="#">Link <span class="sr-only">(current)</span></a></li>
+        <li><a href="{% url "posts:post-index" %}">post</a></li>
+        <li class="dropdown">
+          <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Dropdown <span class="caret"></span></a>
+          <ul class="dropdown-menu">
+            <li><a href="#">Action</a></li>
+            <li><a href="#">Another action</a></li>
+            <li><a href="#">Something else here</a></li>
+            <li role="separator" class="divider"></li>
+            <li><a href="#">Separated link</a></li>
+            <li role="separator" class="divider"></li>
+            <li><a href="#">One more separated link</a></li>
+          </ul>
+        </li>
+      </ul>
+
+          <form method='GET' action='' class="navbar-form navbar-left">
+            <div class="form-group">
+                <div class="input-group">
+                    <input class='form-control' name='q' placeholder='Search posts' value='{{ request.GET.q }}'/>
+                    <span class="input-group-btn">
+                        <!--<input class="btn btn-default" type='submit' value='Search' />
+                         <button class='btn btn-default' type='submit'>Search <i class="fa fa-search"></i></button>-->
+
+                        <button type="submit" class="btn btn-default"><span class="glyphicon glyphicon-search" aria-hidden="true"></span> Search</button>
+
+                    </span>
+                </div>
+            </div>
+        </form>
+
+
+      <ul class="nav navbar-nav navbar-right">
+
+         {% if request.user.is_authenticated %}
+            <li class="dropdown">
+              <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">{{ request.user.first_name }} <span class="caret"></span></a>
+              <ul class="dropdown-menu">
+                <li><a href="{% url "account:settings" %}">Settings</a></li>
+                <li><a href="#">Another action</a></li>
+                <li role="separator" class="divider"></li>
+                <li><a href="{% url "account:logout" %}">Logout</a></li>
+              </ul>
+            </li>
+       {% else %}
+            <li> <a href="{% url "account:login" %}">Log-in</a></li>
+        {% endif %}
+
+          <li><a href="#">关于</a></li>
+      </ul>
+
+
+    </div><!-- /.navbar-collapse -->
+  </div><!-- /.container-fluid -->
+</nav>
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li class="{{ message.tags }}">
+                    {{ message|safe }}
+                    <a href="#" class="close">×</a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+
+    <div id="content">
+        {% block content %}
+        {% endblock %}
+    </div>
+
+<!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+    <script src=" http://cdn.jsdelivr.net/jquery.cookie/1.4.1/jquery.cookie.min.js "></script>
+
+
+<!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+<script
+  src="http://code.jquery.com/jquery-1.12.4.js"
+  integrity="sha256-Qw82+bXyGq6MydymqBxNPYTaUXXq7c8v3CwiYwLLNXU="
+  crossorigin="anonymous"></script>
+
+<!-- 最新的 Bootstrap 核心 JavaScript 文件 -->
+<script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+
+<script src="https://cdn.bootcss.com/marked/0.3.5/marked.min.js"></script>
+
+<script type="text/javascript">
+$(document).ready(function() {
+    {% block domready %}
+    {% endblock domready %}
+});
+
+$(document).ready(function(){
+    //post-detail output markdown format
+    $(".content-markdown").each(function(){
+            var content = $(this).text()
+            console.log(content)
+            var markedContent = marked(content)
+            console.log(markedContent)
+            $(this).html(markedContent)
+    })
+
+
+    $(".post-detail-item img").each(function(){
+    $(this).addClass('img-responsive')
+    })
+
+
+        //评论回复
+        $(".comment-reply-btn").click(function(event){
+            event.preventDefault();
+            $(this).parent().next(".comment-reply").fadeToggle();
+        })
+
+})
+</script>
+
+<script>
+    $(document).ready(function(){
+    var $category = $('#id_category');
+    function updateLanguageChoices() {
+        var selected = $category.val();
+        if (selected) {
+            $.getJSON('/path/to/ajax/view/', { cat_id: selected }, function (data, jqXHR) {
+                var output = [];
+                $.each(data, function(i, item){
+                    output.append('<option value="'+item.id+'">'+item.name+'</option>');
+                });
+                $('#id_planguage').html(output.join(''));
+            });
+        }
+    }
+    updateLanguageChoices();
+    $category.change(updateLanguageChoices);
+});
+</script>
+
+</body>
+</html>

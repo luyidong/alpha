@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+{% block title %}Edit your account{% endblock %}
+
+{% block content %}
+
+
+<div class="container">
+
+    <!-- Public Profile -->
+    <div class="Subhead mt-0 mb-0">
+    <h2 class="Subhead-heading">Public profile</h2>
+    </div>
+
+    <div class="col-3 float-left pr-4" role="navigation">
+      <nav class="menu" data-pjax="">
+        <h3 class="menu-heading">
+          Personal settings
+        </h3>
+
+            <a href="{% url "account:settings" %}" class="js-selected-navigation-item selected menu-item" data-selected-links="avatar_settings /settings/profile">
+                账号</a>
+            <a href="{% url "account:email-change" %}" class="js-selected-navigation-item menu-item" data-selected-links=" /settings/emails">
+                邮箱</a>
+            <a href="{% url "account:password-change" %}" class="js-selected-navigation-item menu-item" data-selected-links=" /settings/notifications">
+                密码</a>
+            <a href="{% url "account:email-change" %}" class="js-selected-navigation-item menu-item" data-selected-links=" /account/password-change">
+                会员</a>
+
+      </nav>
+    </div>
+
+    <div class="col-9 float-left">
+
+  <!-- '"` --><!-- </textarea></xmp> --><form accept-charset="UTF-8" action="/users/luyidong" class="columns js-uploadable-container js-upload-avatar-image is-default" data-alambic-owner-id="15187991" data-alambic-owner-type="User" data-upload-policy-authenticity-token="AwB97YAYZVdEQKyHaDOeSMmlQz72XT5TEMKt5rhNHMT9UBt0TL28USinrD+O8UAhG7nXMXVV2nD8R0XZ2yfunQ==" data-upload-policy-url="/upload/policies/avatars" id="profile_15187991" method="post" novalidate="novalidate"><div style="margin:0;padding:0;display:inline"><input name="utf8" type="hidden" value="✓"><input name="_method" type="hidden" value="put"><input name="authenticity_token" type="hidden" value="8Gwv0eYPaZS8NtXOL4TG7Ioe1U+7Zz/AFtSMPKGqK4yR77r31c951od+bgZtipbBMFt7OeQ0wUaFKG6Z93RbrQ=="></div>
+    <dl class="form-group edit-profile-avatar mr-4 float-right">
+  <dt><label for="upload-profile-picture">Profile picture</label></dt>
+  <dd class="avatar-upload-container clearfix">
+            <img src="{{ user.profile.get_user_photo }}" style=" height= 200px; width: 200px; border-radius: 5px; margin-bottom: 1em;">
+
+    <div class="avatar-upload">
+      <label class="position-relative btn button-change-avatar mt-3 width-full text-center">
+        <a href="{% url 'account:upload_picture' %}">Upload new picture</a>
+          <!--
+        <input type="file" class="manual-file-chooser width-full height-full ml-0 js-manual-file-chooser js-avatar-field">-->
+      </label>
+
+      <div class="upload-state loading">
+        <button type="button" class="btn mt-3 width-full text-center" disabled="">
+          <img alt="" class="v-align-text-bottom" height="16" src="https://assets-cdn.github.com/images/spinners/octocat-spinner-32.gif" width="16"> Uploading...
+        </button>
+      </div>
+
+      <div class="upload-state text-red file-empty">
+        This file is empty.
+      </div>
+
+      <div class="upload-state text-red too-big">
+        Please upload a picture smaller than 1 MB.
+      </div>
+
+      <div class="upload-state text-red bad-dimensions">
+        Please upload a picture smaller than 10,000x10,000.
+      </div>
+
+      <div class="upload-state text-red bad-file">
+        We only support PNG, GIF, or JPG pictures.
+      </div>
+
+      <div class="upload-state text-red failed-request">
+        Something went really wrong and we can’t process that picture.
+      </div>
+
+      <div class="upload-state text-red bad-format">
+        File contents don't match the file extension.
+      </div>
+    </div> <!-- /.avatar-upload -->
+  </dd>
+</dl>
+
+    <div class="column two-thirds">
+        <form action="." method="post" enctype="multipart/form-data">
+            {{ user_form|crispy }}
+            {{ profile_form|crispy}}
+            {% csrf_token %}
+            <!-- <p><input type="submit" value="Save changes"></p>-->
+            <p><button type="submit" class="btn btn-primary">Update profile</button></p>
+        </form>
+    </div>
+    </div>
+
+</div>
+
+{% endblock %}

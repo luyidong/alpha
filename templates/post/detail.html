@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% load crispy_forms_tags %}
+
+ {% block post_detail_link %}
+  <li><a href='{{ instance.get_absolute_url }}'>{{ instance.title }}</a></li>
+  {% endblock %}
+
+{% block content %}
+
+    <div class="myradio">
+    <div data-v-09e13124="" class="category-list"><div data-v-09e13124="" class="item">Android</div><div data-v-09e13124="" class="item">前端</div><div data-v-09e13124="" class="item">iOS</div><div data-v-09e13124="" class="item">产品</div><div data-v-09e13124="" class="item">设计</div><div data-v-09e13124="" class="item">工具资源</div><div data-v-09e13124="" class="item active">阅读</div><div data-v-09e13124="" class="item">后端</div><div data-v-09e13124="" class="item">人工智能</div></div>
+
+   <div class='col-sm-6 col-sm-offset-3'>
+
+   <div class="row">
+       <div class="col-sm-12">
+
+        {% if instance.image %}
+        <img src='{{ instance.image.url }}' class='img-responsive' />
+        {% endif %}
+        <h1><small>{{ instance.title }} </small></h1>
+
+
+   <div class='post-detail-item'>{{ instance.get_markdown }}</div>
+{% if instance.user.get_full_name %}
+    <p>Author: {{ instance.user.get_full_name }}</p>
+{% endif %}
+
+    </div><!--end col-sm-12-->
+
+<div>
+
+<div>
+     {% for tag in tags %}
+        <a href="{{ tag.get_absolute_url }}"><span class="label label-default">{{ tag.tag }}</span></a>
+
+    {% endfor %}
+
+<p>Read time: {% if  instance.read_time <= "01" %} < 1 minutes
+        {% else %} {{ instance.read_time }} minutes {% endif %}
+</p>
+
+</div>
+
+        <p class='lead'>Comments</p>
+        <form method="POST" action="."> {% csrf_token %}
+            {{ comment_form|crispy }}
+            <input type='submit' value='Post comment' class='btn btn-default'>
+        </form>
+        <hr/>
+        {% for comment in comments %}
+
+        <blockquote>
+          <p>{{ comment.content }}</p>
+          <footer>via {{ comment.user }} | {{ comment.timestamp|timesince }} ago | {% if comment.children.count > 0 %}
+                    {{ comment.children.count }} Comments {% if comment.children.count > 1 %} {% endif %}| {% endif %} <a class='comment-reply-btn' href="#">查看会话</a>| <a class='' href='{{ comment.get_absolute_url }}'>列表</a>
+          </footer>
+
+           <div class='comment-reply' style="display: none;">
+                {% for child_comment in comment.children %}
+                <blockquote>
+                <p>{{ child_comment.content }}</p>
+                <footer>via {{ child_comment.user }} | {{ child_comment.timestamp|timesince }} ago</footer>
+                </blockquote>
+                {% endfor %}
+
+                <form method="POST" action="."> {% csrf_token %}
+                    {{ comment_form|crispy }}
+                    <input type='hidden' name='parent_id' value='{{ comment.id }}'>
+                    <input type='submit' value='Reply' class='btn btn-default'>
+                </form>
+            </div>
+
+        </blockquote>
+
+        <hr/>
+        {% endfor %}
+    </div>
+
+
+
+
+   </div><!--end row-->
+
+</div><!--end col-sm-6 col-sm-offset-3-->
+
+{% endblock %}
