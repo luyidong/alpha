@@ -30,6 +30,13 @@ from django.contrib.contenttypes.models import ContentType
 from actions.utils import create_action
 
 
+import redis
+from django.conf import settings
+r = redis.StrictRedis(host=settings.REDIS_HOST,
+                      port=settings.REDIS_PORT,
+                      db=settings.REDIS_DB)
+
+
 def index(request):
     templates='post/index.html'
     # queryset = Post.get_published()
@@ -45,7 +52,7 @@ def index(request):
 				).distinct()
 
 
-    paginator = Paginator(queryset, 5) # Show 25 contacts per page
+    paginator = Paginator(queryset, 3) # Show 25 contacts per page
     page_request_var = "page"
     page = request.GET.get(page_request_var)
     try:
@@ -54,16 +61,20 @@ def index(request):
         # If page is not an integer, deliver first page.
         queryset = paginator.page(1)
     except EmptyPage:
+        if request.is_ajax():
+            # If the request is AJAX and the page is out of range return an empty page
+            return HttpResponse('')
         # If page is out of range (e.g. 9999), deliver last page of results.
         queryset = paginator.page(paginator.num_pages)
-
-
 
     context = {
         "title": "Index",
         "object_list" : queryset,
         "page_request_var":page_request_var,
     }
+    if request.is_ajax():
+        return render(request,'post/list_ajax.html',context)
+
     return render(request,templates,context)
 
 def detail(request,slug=None):
@@ -116,6 +127,13 @@ def detail(request,slug=None):
             print("it worked!")
         #清楚评论框里的内容
         return HttpResponseRedirect(new_comment.content_object.get_absolute_url())
+
+
+    # increment total post views by 1
+    total_views = r.incr('post:{}:views'.format(instance.id))
+    # increment post ranking by 1
+    r.zincrby('post_ranking', instance.id, 1)
+
     comments = instance.comments
     comments_count = instance.comments.count()
     tags=instance.tags
@@ -128,6 +146,7 @@ def detail(request,slug=None):
         "comment_form":form,
         "comments_count":comments_count,
         "tags":tags,
+        'total_views': total_views,
     }
 
     return render(request,templates,context)
