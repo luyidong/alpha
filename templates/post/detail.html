@@ -7,8 +7,6 @@
 
 {% block content %}
 
-    <div class="myradio">
-    <div data-v-09e13124="" class="category-list"><div data-v-09e13124="" class="item">Android</div><div data-v-09e13124="" class="item">前端</div><div data-v-09e13124="" class="item">iOS</div><div data-v-09e13124="" class="item">产品</div><div data-v-09e13124="" class="item">设计</div><div data-v-09e13124="" class="item">工具资源</div><div data-v-09e13124="" class="item active">阅读</div><div data-v-09e13124="" class="item">后端</div><div data-v-09e13124="" class="item">人工智能</div></div>
 
    <div class='col-sm-6 col-sm-offset-3'>
 
@@ -18,13 +16,30 @@
         {% if instance.image %}
         <img src='{{ instance.image.url }}' class='img-responsive' />
         {% endif %}
-        <h1><small>{{ instance.title }} </small></h1>
-
-
-   <div class='post-detail-item'>{{ instance.get_markdown }}</div>
+        <h3><small>{{ instance.title }} </small> </h3>
+    <p><a class='like-btn' data-href='{{ instance.get_api_like_url }}' data-likes='{{ instance.likes.count }}' href='{{ instance.get_like_url }}'>{{ instance.likes.count }} Like</a>  <small>{{ instance.timestamp|timesince }} ago</small></p>
 {% if instance.user.get_full_name %}
-    <p>Author: {{ instance.user.get_full_name }}</p>
+    <p>Author: {{ instance.user.get_full_name }} | <small> {{ user.profile.get_user_bio }} </small></p>
+    <div class="profile-info">
+
+
+                    {% load thumbnail %}
+            <img src="{{ user.profile.get_user_photo }}" style=" height= 28px; width: 28px; border-radius: 5px; margin-bottom: 1em;">
+
+                    {% thumbnail user.profile "800x200" crop="center" as im %}
+                    <a href='{{ obj.get_absolute_url }}'> <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}" class='img-responsive' /> </a>
+                    {% endthumbnail %}
+
+
+    </div>
+
+
+
 {% endif %}
+    {% with comment_count=comments_count users_like=image.users_like.all %}
+        <a href="#comment-submit">{{ comment_count }}评论</a>
+        {% endwith %}
+   <div class='post-detail-item'>{{ instance.get_markdown }}</div>
 
     </div><!--end col-sm-12-->
 
@@ -40,10 +55,52 @@
         {% else %} {{ instance.read_time }} minutes {% endif %}
 </p>
 
+
+
+        <div class="image-likes">
+            <p><a class='like-btn' data-href='{{ instance.get_api_like_url }}' data-likes='{{ instance.likes.count }}' href='{{ instance.get_like_url }}'>{{ instance.likes.count }} Like</a> </p>
+
+            {% for user in instance.likes.all%}
+                <div>
+                    <img src="{{ user.profile.get_user_photo }}" style=" height= 28px; width: 28px; border-radius: 5px; margin-bottom: 1em;">
+
+                    <p>{{ user.first_name }}</p>
+                </div>
+            {% empty %}
+
+            {% endfor %}
+        </div>
+
+<div class="entry-footer clearfix">
+    <div class="topic-cafe column">
+        <div class="column-title">Published In</div>
+
+        {% if instance.category.image %}
+            {% load thumbnail %}
+
+            {% thumbnail instance.category.image "50x50" crop="center" as im %}
+                <a class="column-header" href='{{ instance.category.get_absolute_url }}'> <img src="{{ im.url }}" width="{{ im.width }}" height="{{ im.height }}"  />
+            {% endthumbnail %}
+            {%  endif %}
+             <div class="column-main"><strong>{{ instance.category.get_category_name }}</strong></div>
+             </a>
+        <p>{{ instance.category.get_category_desc }}</p>
+    </div>
+    <div class="topic-author column">
+        <div class="column-title">Created By</div>
+        <div class="column-header">
+            <a class="avatar" href="/u/dang"><span class="v-avatar v-avatar--squared" aria-label="dang"><span class="v-avatar__text" style="background-color: rgb(84, 200, 132); color: white; background-position: initial initial; background-repeat: initial initial;">D</span></span></a>
+            <a class="column-main" href="/u/dang"><strong>dang</strong><div>#2842</div></a>
+        </div>
+        <p></p>
+    </div>
+</div>
+
+
 </div>
 
         <p class='lead'>Comments</p>
-        <form method="POST" action="."> {% csrf_token %}
+        <form method="POST" action="."  id="comment-submit"> {% csrf_token %}
             {{ comment_form|crispy }}
             <input type='submit' value='Post comment' class='btn btn-default'>
         </form>

@@ -17,15 +17,13 @@ from posts.forms import PostForm,CommentForm,TaggedItemForm
 
 from django.contrib import messages
 from django.core import serializers
-from django.utils import timezone
+from django.views.generic import RedirectView
 
 from uuslug import slugify
 #Paginator
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-
 #search
-from django.db.models import Q
-
+from django.db.models import Q,Count
 #comments
 from django.contrib.contenttypes.models import ContentType
 
@@ -114,6 +112,7 @@ def detail(request,slug=None):
         #清楚评论框里的内容
         return HttpResponseRedirect(new_comment.content_object.get_absolute_url())
     comments = instance.comments
+    comments_count = instance.comments.count()
     tags=instance.tags
     context = {
         "title": instance.title,
@@ -122,11 +121,11 @@ def detail(request,slug=None):
         "share_string": share_string,
         "comments": comments,
         "comment_form":form,
+        "comments_count":comments_count,
         "tags":tags,
     }
 
     return render(request,templates,context)
-
 
 def create(request):
     templates='post/form.html'
@@ -310,7 +309,6 @@ def delete(request,id=None):
     instance.delete()
     return redirect("posts:post-index")
 
-
 def comment_delete(request, id):
     # obj = get_object_or_404(Comment, id=id)
     obj=Comment.objects.get(id=id)
@@ -387,7 +385,6 @@ def comment_thread(request, id):
     }
     return render(request, "post/comment_thread.html", context)
 
-
 def ajax_get_languages_for_category(request):
     cat_id = request.GET.get('cat_id')
     if cat_id is not None:
@@ -445,3 +442,98 @@ def topic(request,topic):
     }
     return render(request,templates,context)
 
+def CategoryView(request,slug):
+    templates='post/category.html'
+    # print slug
+    # topic_tag= TaggedItem.objects.get(tag_slug__contains=topic).tag
+    # cate_slug= Category.objects.filter(slug=slug).values("id").distinct()
+    cate_slug= Category.objects.get(slug=slug).id
+    print cate_slug
+    # getattr(obj, field_name)
+    # querysetss=Post.objects.filter(id__in=topic).filter(status='P')
+    # print topic_tag
+
+    # cate_slug= Category.objects.filter(slug__contains=slug).values('name')
+    queryset=Post.objects.filter(category=int(cate_slug)).filter(status='P')
+    # print 'topic_slug',topic_slug
+    print 'queryset',queryset
+    query = request.GET.get("q")
+    if query:
+		queryset = queryset.filter(
+				Q(title__icontains=query)|
+				Q(content__icontains=query)|
+				Q(user__first_name__icontains=query) |
+				Q(user__last_name__icontains=query)
+				).distinct()
+
+
+    paginator = Paginator(queryset, 5) # Show 25 contacts per page
+    page_request_var = "page"
+    page = request.GET.get(page_request_var)
+    try:
+        queryset = paginator.page(page)
+    except PageNotAnInteger:
+        # If page is not an integer, deliver first page.
+        queryset = paginator.page(1)
+    except EmptyPage:
+        # If page is out of range (e.g. 9999), deliver last page of results.
+        queryset = paginator.page(paginator.num_pages)
+
+
+
+    context = {
+        "title": cate_slug,
+        "object_list" : queryset,
+        "page_request_var":page_request_var,
+    }
+    return render(request,templates,context)
+
+class PostLikeRedirect(RedirectView):
+    def get_redirect_url(self,*args,**kwargs):
+        slug = self.kwargs.get("slug")
+        print(slug) #posts/title
+        obj = get_object_or_404(Post, slug=slug)
+        return obj.get_absolute_url()
+
+class PostLikeToggle(RedirectView):
+    def get_redirect_url(self, *args, **kwargs):
+        slug = self.kwargs.get("slug")
+        print(slug)
+        obj = get_object_or_404(Post, slug=slug)
+        url_ = obj.get_absolute_url()
+        user = self.request.user
+        if user.is_authenticated():
+            if user in obj.likes.all():
+                obj.likes.remove(user)
+            else:
+                obj.likes.add(user)
+        return url_
+
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import authentication, permissions
+
+class PostLikeAPIToggle(APIView):
+    authentication_classes = (authentication.SessionAuthentication,)
+    permission_classes = (permissions.IsAuthenticated,)
+
+    def get(self, request, slug=None, format=None):
+        # slug = self.kwargs.get("slug")
+        obj = get_object_or_404(Post, slug=slug)
+        url_ = obj.get_absolute_url()
+        user = self.request.user
+        updated = False
+        liked = False
+        if user.is_authenticated():
+            if user in obj.likes.all():
+                liked = False
+                obj.likes.remove(user)
+            else:
+                liked = True
+                obj.likes.add(user)
+            updated = True
+        data = {
+            "updated": updated,
+            "liked": liked
+        }
+        return Response(data)

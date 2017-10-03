@@ -1,6 +1,6 @@
 > Created by `luyidong <yidongsky@gmail.com>`_
 
-Alpha 社交网站
+### Alpha 社交网站
 ========
 
 1. 技术包含	-  Django,Python2.7,Bootstrap,jQuery
@@ -9,7 +9,7 @@ Alpha 社交网站
 
 3. follows	- 关注的人正在做什么
 
-功能
+### 功能
 ========
 1. 支持markdown
 
