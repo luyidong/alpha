@@ -411,18 +411,6 @@ def comment_thread(request, id):
     }
     return render(request, "post/comment_thread.html", context)
 
-def ajax_get_languages_for_category(request):
-    cat_id = request.GET.get('cat_id')
-    if cat_id is not None:
-        category = get_object_or_404(Category, id=cat_id)
-        print category
-        abc=Category.objects.all
-        print abc
-        # data = serializers.serialize('json', category.objects.all)
-        data=''
-        return HttpResponse(data, mimetype='application/json')
-    else:
-        return HttpResponseBadRequest()
 
 def topic(request,topic):
     templates='post/topic.html'
@@ -567,3 +555,24 @@ class PostLikeAPIToggle(APIView):
             "liked": liked
         }
         return Response(data)
+
+
+def post_ranking(request):
+    templates='post/ranking.html'
+    # get post ranking dictionary
+    post_ranking = r.zrange('post_ranking', 0, -1, desc=True)[:10]
+    print 'post_ranking',post_ranking,type(post_ranking)
+    for obj in post_ranking:
+        print 'obj',obj,type(obj)
+
+    post_ranking_ids = [int(id) for id in post_ranking]
+    print 'post_ranking_ids',post_ranking_ids
+    # get most viewed post
+    most_viewed = list(Post.objects.filter(id__in=post_ranking_ids))
+    most_viewed.sort(key=lambda x: post_ranking_ids.index(x.id))
+
+    context = {
+        "title": 'POST',
+        'most_viewed': most_viewed,
+    }
+    return render(request,templates,context)
