@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% load thumbnail %}
+
+{% block title %}People{% endblock %}
+
+{% block content %}
+
+
+
+    <h1>{{ section }}</h1>
+
+    {% for us in users %}
+
+          <div class="">
+                <img src="{{ us.profile.get_user_photo }}" style=" height= 28px; width: 28px; border-radius: 5px; margin-bottom: 1em;">
+
+                <a href="{{ us.get_absolute_url }}" class="title">{{ us.first_name }}{{ us.username }}</a>
+            </div>
+
+
+    {% endfor %}
+
+    <div id="people-list">
+        {% for us in users %}
+            <div class="user">
+                <a href="{{ user.get_absolute_url }}">
+                    {% thumbnail user.profile.photo "180x180" crop="100%" as im %}
+                        <img src="{{ im.url }}">
+                    {% endthumbnail %}
+                </a>
+                <div class="info">
+                    <a href="{{ us.get_absolute_url }}" class="title">{{ us.get_full_name }}{{ us.first_name }}</a>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock %}
