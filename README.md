@@ -1,4 +1,4 @@
-> Created by `luyidong <yidongsky@gmail.com>`_
+> Created by `luyidong <yidongsky@gmail.com>`
 
 ### Alpha 社交网站
 ========

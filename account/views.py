@@ -4,17 +4,26 @@ __author__ = "yidong.lu"
 __email__ = "yidongsky@gmail.com"
 
 
-from django.shortcuts import render
-from django.http import HttpResponse
-from django.shortcuts import render,redirect
+from django.shortcuts import render, redirect, get_object_or_404
+from django.http import HttpResponse, JsonResponse
+
 from django.contrib.auth import authenticate,login,logout,update_session_auth_hash
 from django.core.urlresolvers import reverse
 
 from django.contrib.auth.decorators import login_required
-from account.models import Profile
+from account.models import Profile,Contact
 from django.contrib.auth.forms import PasswordChangeForm
 from .utils.email import send_email_change_email
 from .utils.tokens import UserEmailChangeTokenGenerator
+from django.contrib.auth.models import User
+from actions.models import  Action
+
+from django.views.decorators.http import require_POST
+from .common.decorators import ajax_required
+#actions
+from actions.utils import create_action
+
+
 
 from django.conf import settings as django_settings
 import os
@@ -34,15 +43,31 @@ def index(request):
     templates='index.html'
     return  render(request,templates)
 
+
+def dashboard(request):
+    templates='index.html'
+    user = getattr(request, 'user', None)
+    # Display all actions by default
+    actions = Action.objects.all().exclude(user=user)
+    following_ids = request.user.following.values_list('id', flat=True)
+    if following_ids:
+        # If user is following others, retrieve only their actions
+        actions = actions.filter(user_id__in=following_ids).select_related('user', 'user__profile').prefetch_related('target')
+    actions = actions[:10]
+
+    return render(request, templates, {'section': 'dashboard',
+                                                      'actions': actions})
+
 def login_view(request):
+    user = getattr(request, 'user', None)
     title = "Login"
     form = UserLoginForm(request.POST or None)
 
     if form.is_valid():
         username = form.cleaned_data.get("username")
         password = form.cleaned_data.get("password")
-        user = authenticate(username=username,password=password)
-        login(request,user)
+        user_auth = authenticate(username=username,password=password)
+        login(request,user_auth)
 
         check = Profile.objects.filter(user=user)
         exists=check.exists()
@@ -53,7 +78,7 @@ def login_view(request):
             profile_create = Profile.objects.create(user=user)
         # if next:
         #     return  redirect(next)
-        return redirect("/account")
+        return redirect("/account/")
         #print(request.user.is_authenticated())
 
     return render(request,"account/form.html",{"form":form,"title":title})
@@ -102,7 +127,8 @@ def settings(request):
             profile_form.save()
             #messages.success(request, 'Profile updated successfully')
         else:
-            messages.error(request, 'Error updating your profile')
+            pass
+            # messages.error(request, 'Error updating your profile')
 
     else:
         user_form = UserEditForm(instance=request.user)
@@ -244,3 +270,35 @@ def save_uploaded_picture(request):
         pass
 
     return redirect('/account/settings/picture/')
+
+
+def user_list(request):
+    users = User.objects.filter(is_active=True)
+    print users
+    return render(request, 'account/user/list.html', {'section': 'people',
+                                                      'users': users})
+def user_detail(request, username):
+    user = get_object_or_404(User, username=username, is_active=True)
+    print 'user',user
+    return render(request, 'account/user/detail.html', {'section': 'people',
+                                                        'user': user})
+@ajax_required
+@require_POST
+def user_follow(request):
+    user_id = request.POST.get('id')
+    action = request.POST.get('action')
+    if user_id and action:
+        try:
+            user = User.objects.get(id=user_id)
+            print  user
+            if action == 'follow':
+                Contact.objects.get_or_create(user_from=request.user,
+                                              user_to=user)
+                create_action(request.user, 'is following', user)
+            else:
+                Contact.objects.filter(user_from=request.user,
+                                       user_to=user).delete()
+            return JsonResponse({'status':'ok'})
+        except User.DoesNotExist:
+            return JsonResponse({'status':'ko'})
+    return JsonResponse({'status':'ko'})

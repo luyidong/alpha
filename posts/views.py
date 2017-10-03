@@ -26,6 +26,8 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.db.models import Q,Count
 #comments
 from django.contrib.contenttypes.models import ContentType
+#actions
+from actions.utils import create_action
 
 
 def index(request):
@@ -107,8 +109,11 @@ def detail(request,slug=None):
                             content = content_data,
                             parent = parent_obj,
                         )
-        # if created:
-        #     print("it worked!")
+        create_action(request.user, 'create comment', instance)
+        if created:
+            # create_action(request.user, 'create comment', content_data)
+
+            print("it worked!")
         #清楚评论框里的内容
         return HttpResponseRedirect(new_comment.content_object.get_absolute_url())
     comments = instance.comments
@@ -135,6 +140,7 @@ def create(request):
     if all([post_form.is_valid(),tag_form.is_valid()]):
         instance=post_form.save(commit=False)
         instance.save()
+        create_action(request.user, 'create post', instance)
 
         content_type = ContentType.objects.get(model=instance.get_content_type)
         tag = None
@@ -236,6 +242,7 @@ def update(request,slug=None):
     if all([post_form.is_valid(),tag_form.is_valid()]):
         instance=post_form.save(commit=False)
         instance.save()
+        create_action(request.user, 'update posts', instance)
 
         content_type = ContentType.objects.get(model=instance.get_content_type)
 
@@ -495,6 +502,7 @@ class PostLikeRedirect(RedirectView):
         obj = get_object_or_404(Post, slug=slug)
         return obj.get_absolute_url()
 
+
 class PostLikeToggle(RedirectView):
     def get_redirect_url(self, *args, **kwargs):
         slug = self.kwargs.get("slug")
@@ -507,7 +515,10 @@ class PostLikeToggle(RedirectView):
                 obj.likes.remove(user)
             else:
                 obj.likes.add(user)
+                create_action(self.request.user, 'Post like', obj.title)
+
         return url_
+
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
